@@ -14,7 +14,7 @@ pub trait EquistarGameContract: storage::StorageModule {
 
     #[payable("*")]
     #[endpoint(buyTickets)]
-    fn buy_tickets(&self) -> SCResult<BigUint> {
+    fn buy_tickets(&self) -> BigUint {
         let (token_identifier, _token_nonce, amount) = self.call_value().single_esdt().into_tuple();
 
         require!(
@@ -37,6 +37,6 @@ pub trait EquistarGameContract: storage::StorageModule {
         self.send()
             .direct_esdt(&owner, &token_identifier, 0, &amount);
         
-        Ok(number_of_tickets)
+        number_of_tickets
     }
 }

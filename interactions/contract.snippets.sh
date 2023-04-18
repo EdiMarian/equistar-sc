@@ -1,13 +1,13 @@
 PROJECT="${PWD}"
 
-TOKEN_ID="ESTAR-ccc274"
-TOKEN_ID_HEX="0x$(echo -n ${TOKEN_ESTAR_ID} | xxd -p -u | tr -d '\n')"
+TOKEN_ID="ESTAR-461bab"
+TOKEN_ID_HEX="0x$(echo -n ${TOKEN_ID} | xxd -p -u | tr -d '\n')"
 
-PEM_FILE="/home/edi/Desktop/my-wallet/my_wallet.pem"
-PROXY=https://devnet-gateway.multiversx.com
-CHAINID=D
-ADDRESS=erd1qqqqqqqqqqqqqpgqwdwhc6lhgwkwg00724d3qq7jwg6vg8qhxszquk0j0g
-MY_ADDRESS="erd1a6p39rlsn2lm20adqe5tmzy543luwqx4dywzflr2dmtwdf75xszqdw9454"
+PEM_FILE="/home/edi/Desktop/wallet-estar/wallet-owner.pem"
+PROXY=https://gateway.multiversx.com
+CHAINID=1
+ADDRESS=erd1qqqqqqqqqqqqqpgqplw6qj45dvvdfcf7dcl30rp3y5zl0arawmfs6ratsj
+MY_ADDRESS="erd1szcgm7vq3tmyxfgd4wd2k2emh59az8jq5jjpj9799a0k59u0wmfss4vw3v"
 
 deploy() {
   mxpy --verbose contract deploy --project=${PROJECT} --recall-nonce --pem=${PEM_FILE} \
