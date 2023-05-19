@@ -3,6 +3,9 @@ PROJECT="${PWD}"
 TOKEN_ID="ESTAR-461bab"
 TOKEN_ID_HEX="0x$(echo -n ${TOKEN_ID} | xxd -p -u | tr -d '\n')"
 
+TEST_TOKEN_ID="HYPE-619661"
+TEST_TOKEN_ID_IN_HEX="0x$(echo -n ${TEST_TOKEN_ID} | xxd -p -u | tr -d '\n')"
+
 PEM_FILE="/home/edi/Desktop/wallet-estar/wallet-owner.pem"
 PROXY=https://gateway.multiversx.com
 CHAINID=1
@@ -23,14 +26,48 @@ updateContract() {
     --arguments $TOKEN_ID_HEX 10000000000000000000
 }
 
+updatePriceInEstar() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="updatePriceInEstar" \
+    --arguments 10000000000000000000 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+updatePriceInEgld() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="updatePriceInEgld" \
+    --arguments 660000000000000 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
 buyTickets() {
   method_name="0x$(echo -n 'buyTickets' | xxd -p -u | tr -d '\n')"
   mxpy --verbose contract call ${ADDRESS} --recall-nonce \
     --pem=${PEM_FILE} \
-    --gas-limit=60000000 \
+    --gas-limit=5000000 \
     --proxy=${PROXY} --chain=${CHAINID} \
     --function="ESDTTransfer" \
-    --arguments $TOKEN_ID_HEX 100000000000000000000 $method_name \
+    --arguments $TEST_TOKEN_ID_IN_HEX 100000000000000000000 $method_name \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+buyTicketsWithEgld() {
+  method_name="0x$(echo -n 'buyTickets' | xxd -p -u | tr -d '\n')"
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --value=66000000000000 \
+    --function="buyTickets" \
     --send \
     --outfile="${PROJECT}/interactions/logs/stake.json"
 }
