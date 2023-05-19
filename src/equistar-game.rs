@@ -7,25 +7,48 @@ mod storage;
 #[multiversx_sc::contract]
 pub trait EquistarGameContract: storage::StorageModule {
     #[init]
-    fn init(&self, token_identifier: TokenIdentifier, ticket_price: BigUint) {
+    fn init(&self, token_identifier: TokenIdentifier) {
         self.token_identifier().set(&token_identifier);
-        self.ticket_price_in_estar().set(&ticket_price);
-        self.ticket_price_in_egld().set(&ticket_price);
     }
 
     #[only_owner]
-    #[endpoint(updatePriceInEstar)]
-    fn update_price_in_estar(&self, ticket_price: BigUint) {
+    #[endpoint(updateTicketPriceInEstar)]
+    fn update_ticket_price_in_estar(&self, ticket_price: BigUint) {
         self.ticket_price_in_estar().set(&ticket_price);
     }
 
     #[only_owner]
-    #[endpoint(updatePriceInEgld)]
-    fn update_price_in_egld(&self, ticket_price: BigUint) {
+    #[endpoint(updateTicketPriceInEgld)]
+    fn update_ticket_price_in_egld(&self, ticket_price: BigUint) {
         self.ticket_price_in_egld().set(&ticket_price);
+    }
+
+    #[only_owner]
+    #[endpoint(setStablePriceInEstar)]
+    fn set_stable_price_in_estar(&self, level: u64, stable_price: BigUint) {
+        self.stable_price_in_estar(&level).set(stable_price);
+    }
+
+    #[only_owner]
+    #[endpoint(setStablePriceInEgld)]
+    fn set_stable_price_in_egld(&self, level: u64, stable_price: BigUint) {
+        self.stable_price_in_egld(&level).set(stable_price);
+    }
+
+    #[only_owner]
+    #[endpoint(setUserStable)]
+    fn set_user_stable(&self, address: ManagedAddress, level: u64) {
+        self.user_stable(&address).set(level);
+    }
+
+    #[only_owner]
+    #[endpoint(withdrawEgld)]
+    fn withdraw_egld(&self) {
+        let caller = self.blockchain().get_caller();
+        let balance = self.blockchain().get_sc_balance(&EgldOrEsdtTokenIdentifier::egld(), 0);
+        self.send().direct_egld(&caller, &balance);
     }
     
-
     #[payable("*")]
     #[endpoint(buyTickets)]
     fn buy_tickets(&self) -> BigUint {
@@ -56,11 +79,40 @@ pub trait EquistarGameContract: storage::StorageModule {
 
         self.total_tickets_per_address(&caller)
             .update(|total_tickets| *total_tickets += number_of_tickets.clone());
-
-        let owner = self.blockchain().get_owner_address();
-        self.send()
-            .direct(&owner, &token_identifier, 0, &amount);
         
         number_of_tickets
     }
+
+    #[payable("*")]
+    #[endpoint(upgradeStable)]
+    fn upgrade_stable(&self) -> u64 {
+        let (token_identifier, _token_nonce, amount) = self.call_value().egld_or_single_esdt().into_tuple();
+
+        require!(
+            token_identifier == self.token_identifier().get() || token_identifier.is_egld(),
+            "Invalid token!"
+        );
+
+        let caller = self.blockchain().get_caller();
+        let mut user_stable = self.user_stable(&caller).get();
+
+        if token_identifier.is_egld() {
+            require!(
+                amount == self.stable_price_in_egld(&(&user_stable + &1)).get(),
+                "You must pay the stable price!"
+            );
+            user_stable += 1;
+
+        } else {
+            require!(
+                amount == self.stable_price_in_estar(&(&user_stable + &1)).get(),
+                "You must pay the stable price!"
+            );
+            user_stable += 1;
+        }
+
+        self.user_stable(&caller).set(user_stable);
+        user_stable
+    }
+
 }

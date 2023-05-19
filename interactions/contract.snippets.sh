@@ -16,34 +16,79 @@ deploy() {
   mxpy --verbose contract deploy --project=${PROJECT} --recall-nonce --pem=${PEM_FILE} \
     --gas-limit=60000000 --send --outfile="${PROJECT}/interactions/logs/deploy.json" \
     --proxy=${PROXY} --chain=${CHAINID} \
-    --arguments $TOKEN_ID_HEX 10000000000000000000 || return
+    --arguments $TOKEN_ID_HEX || return
 }
 
 updateContract() {
   mxpy --verbose contract upgrade ${ADDRESS} --project=${PROJECT} --recall-nonce --pem=${PEM_FILE} \
     --gas-limit=60000000 --send --outfile="${PROJECT}/interactions/logs/deploy.json" \
     --proxy=${PROXY} --chain=${CHAINID} \
-    --arguments $TOKEN_ID_HEX 10000000000000000000
+    --arguments $TOKEN_ID_HEX
 }
 
-updatePriceInEstar() {
+updateTicketPriceInEstar() {
   mxpy --verbose contract call ${ADDRESS} --recall-nonce \
     --pem=${PEM_FILE} \
     --gas-limit=5000000 \
     --proxy=${PROXY} --chain=${CHAINID} \
-    --function="updatePriceInEstar" \
+    --function="updateTicketPriceInEstar" \
     --arguments 10000000000000000000 \
     --send \
     --outfile="${PROJECT}/interactions/logs/stake.json"
 }
 
-updatePriceInEgld() {
+updateTicketPriceInEgld() {
   mxpy --verbose contract call ${ADDRESS} --recall-nonce \
     --pem=${PEM_FILE} \
     --gas-limit=5000000 \
     --proxy=${PROXY} --chain=${CHAINID} \
-    --function="updatePriceInEgld" \
+    --function="updateTicketPriceInEgld" \
     --arguments 660000000000000 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+setStablePriceInEstar() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="setStablePriceInEstar" \
+    --arguments 5 50000000000000000000000 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+setStablePriceInEgld() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="setStablePriceInEgld" \
+    --arguments 5 3333000000000000000 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+setUserStable() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --value=0 \
+    --function="setUserStable" \
+    --arguments $MY_ADDRESS 3 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+withdrawEgld() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --value=0 \
+    --function="withdrawEgld" \
     --send \
     --outfile="${PROJECT}/interactions/logs/stake.json"
 }
@@ -66,13 +111,62 @@ buyTicketsWithEgld() {
     --pem=${PEM_FILE} \
     --gas-limit=5000000 \
     --proxy=${PROXY} --chain=${CHAINID} \
-    --value=66000000000000 \
+    --value=660000000000000 \
     --function="buyTickets" \
     --send \
     --outfile="${PROJECT}/interactions/logs/stake.json"
 }
 
+upgradeStableWithEstar() {
+  method_name="0x$(echo -n 'upgradeStable' | xxd -p -u | tr -d '\n')"
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="ESDTTransfer" \
+    --arguments $TOKEN_ID_HEX 5000000000000000000000 $method_name \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+upgradeStableWithEgld() {
+  method_name="0x$(echo -n 'upgradeStable' | xxd -p -u | tr -d '\n')"
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --value=666000000000000000 \
+    --function="upgradeStable" \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+getTicketPriceInEstar() {
+  mxpy --verbose contract query ${ADDRESS} --function="getTicketPriceInEstar" \
+    --proxy=${PROXY}
+}
+
+getTicketPriceInEgld() {
+  mxpy --verbose contract query ${ADDRESS} --function="getTicketPriceInEgld" \
+    --proxy=${PROXY}
+}
+
 getTotalTicketsPerAddress() {
   mxpy --verbose contract query ${ADDRESS} --function="getTotalTicketsPerAddress" --arguments $MY_ADDRESS \
+    --proxy=${PROXY}
+}
+
+getStablePriceInEstar() {
+  mxpy --verbose contract query ${ADDRESS} --function="getStablePriceInEstar" --arguments 1 \
+    --proxy=${PROXY}
+}
+
+getStablePriceInEgld() {
+  mxpy --verbose contract query ${ADDRESS} --function="getStablePriceInEgld" --arguments 1 \
+    --proxy=${PROXY}
+}
+
+getUserStable() {
+  mxpy --verbose contract query ${ADDRESS} --function="getUserStable" --arguments $MY_ADDRESS \
     --proxy=${PROXY}
 }
