@@ -10,7 +10,7 @@ PEM_FILE="/home/edi/Desktop/wallet-estar/wallet-owner.pem"
 PROXY=https://gateway.multiversx.com
 CHAINID=1
 ADDRESS=erd1qqqqqqqqqqqqqpgqplw6qj45dvvdfcf7dcl30rp3y5zl0arawmfs6ratsj
-MY_ADDRESS="erd1szcgm7vq3tmyxfgd4wd2k2emh59az8jq5jjpj9799a0k59u0wmfss4vw3v"
+MY_ADDRESS=erd1szcgm7vq3tmyxfgd4wd2k2emh59az8jq5jjpj9799a0k59u0wmfss4vw3v
 
 deploy() {
   mxpy --verbose contract deploy --project=${PROJECT} --recall-nonce --pem=${PEM_FILE} \
@@ -21,9 +21,10 @@ deploy() {
 
 updateContract() {
   mxpy --verbose contract upgrade ${ADDRESS} --project=${PROJECT} --recall-nonce --pem=${PEM_FILE} \
-    --gas-limit=60000000 --send --outfile="${PROJECT}/interactions/logs/deploy.json" \
+    --gas-limit=60000000 --outfile="${PROJECT}/interactions/logs/deploy.json" \
     --proxy=${PROXY} --chain=${CHAINID} \
-    --arguments $TOKEN_ID_HEX
+    --arguments $TOKEN_ID_HEX \
+    --send || return
 }
 
 updateTicketPriceInEstar() {
@@ -54,7 +55,7 @@ setStablePriceInEstar() {
     --gas-limit=5000000 \
     --proxy=${PROXY} --chain=${CHAINID} \
     --function="setStablePriceInEstar" \
-    --arguments 5 50000000000000000000000 \
+    --arguments 2 5000000000000000000000 \
     --send \
     --outfile="${PROJECT}/interactions/logs/stake.json"
 }
@@ -70,6 +71,17 @@ setStablePriceInEgld() {
     --outfile="${PROJECT}/interactions/logs/stake.json"
 }
 
+setStableMaxLevel() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="setStableMaxLevel" \
+    --arguments 5 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
 setUserStable() {
   mxpy --verbose contract call ${ADDRESS} --recall-nonce \
     --pem=${PEM_FILE} \
@@ -77,7 +89,52 @@ setUserStable() {
     --proxy=${PROXY} --chain=${CHAINID} \
     --value=0 \
     --function="setUserStable" \
-    --arguments $MY_ADDRESS 3 \
+    --arguments $MY_ADDRESS 5 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+setFarmPriceInEstar() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="setFarmPriceInEstar" \
+    --arguments 5 30000000000000000000000 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+setFarmPriceInEgld() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="setFarmPriceInEgld" \
+    --arguments 5 1990000000000000000 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+setFarmMaxLevel() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="setFarmMaxLevel" \
+    --arguments 5 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+setUserFarm() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --value=0 \
+    --function="setUserFarm" \
+    --arguments $MY_ADDRESS 0 \
     --send \
     --outfile="${PROJECT}/interactions/logs/stake.json"
 }
@@ -89,6 +146,17 @@ withdrawEgld() {
     --proxy=${PROXY} --chain=${CHAINID} \
     --value=0 \
     --function="withdrawEgld" \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+withdrawEstar() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --value=0 \
+    --function="withdrawEstar" \
     --send \
     --outfile="${PROJECT}/interactions/logs/stake.json"
 }
@@ -130,13 +198,35 @@ upgradeStableWithEstar() {
 }
 
 upgradeStableWithEgld() {
-  method_name="0x$(echo -n 'upgradeStable' | xxd -p -u | tr -d '\n')"
   mxpy --verbose contract call ${ADDRESS} --recall-nonce \
     --pem=${PEM_FILE} \
     --gas-limit=5000000 \
     --proxy=${PROXY} --chain=${CHAINID} \
     --value=666000000000000000 \
     --function="upgradeStable" \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+upgradeFarmWithEstar() {
+  method_name="0x$(echo -n 'upgradeFarm' | xxd -p -u | tr -d '\n')"
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="ESDTTransfer" \
+    --arguments $TOKEN_ID_HEX 30000000000000000000000 $method_name \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/stake.json"
+}
+
+upgradeFarmWithEgld() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=5000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --value=1990000000000000000 \
+    --function="upgradeFarm" \
     --send \
     --outfile="${PROJECT}/interactions/logs/stake.json"
 }
@@ -168,5 +258,10 @@ getStablePriceInEgld() {
 
 getUserStable() {
   mxpy --verbose contract query ${ADDRESS} --function="getUserStable" --arguments $MY_ADDRESS \
+    --proxy=${PROXY}
+}
+
+getUserFarm() {
+  mxpy --verbose contract query ${ADDRESS} --function="getUserFarm" --arguments $MY_ADDRESS \
     --proxy=${PROXY}
 }

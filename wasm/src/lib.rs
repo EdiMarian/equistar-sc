@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           14
+// Endpoints:                           26
 // Async Callback (empty):               1
-// Total number of exported functions:  16
+// Total number of exported functions:  28
 
 #![no_std]
 #![feature(alloc_error_handler, lang_items)]
@@ -22,16 +22,28 @@ multiversx_sc_wasm_adapter::endpoints! {
         updateTicketPriceInEgld
         setStablePriceInEstar
         setStablePriceInEgld
+        setStableMaxLevel
         setUserStable
+        setFarmPriceInEstar
+        setFarmPriceInEgld
+        setFarmMaxLevel
+        setUserFarm
         withdrawEgld
+        withdrawEstar
         buyTickets
         upgradeStable
+        upgradeFarm
         getTicketPriceInEstar
         getTicketPriceInEgld
         getTotalTicketsPerAddress
         getStablePriceInEstar
         getStablePriceInEgld
+        getStableMaxLevel
         getUserStable
+        getFarmPriceInEstar
+        getFarmPriceInEgld
+        getFarmMaxLevel
+        getUserFarm
     )
 }
 
